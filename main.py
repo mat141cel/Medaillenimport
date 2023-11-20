@@ -1,90 +1,98 @@
-import xml.etree.ElementTree as ET
-from datetime import datetime
 from reusable_code import *
+import asyncio
+import re
 
 
 # Configuration
 def main():
-    process_oai()
-    # get_museum_digital()
-    # selection()
+    #asyncio.run(process_oai())
+    #get_museum_digital()
+    #selection(49, "kenom")
+    #selection(49, "md")
+    #send_to_API("kenom")
+    send_to_API("md")
 
 
-def process_oai():
-    resumption_token = None
+async def fetch_url(url, record_list):
+    response_text = make_request(url)
+    root = ET.fromstring(response_text)
+
+    # Define namespaces
+    l = '{http://www.lido-schema.org}'
+    for record in root.findall(".//{http://www.openarchives.org/OAI/2.0/}record"):
+        # simple extraction
+        lieferant = "Kenom"
+        rand_text = None
+        titel = extr_text(record, f".//{l}titleSet[2]/{l}appellationValue")
+        link = extr_text(record, f".//{l}objectPublishedID")
+        besitzer = extr_text(record, f".//{l}repositoryName/{l}legalBodyName/{l}appellationValue")
+        vs_leg = extr_text(record, f".//{l}inscriptionsWrap{l}inscriptions/{l}inscriptionTranscription")
+        vs_text = extr_text(record, f".//{l}inscriptions/{l}inscriptionDescription/{l}descriptiveNoteValue")
+        img_vs_pfad = extr_text(record, f".//{l}resourceSet/{l}resourceRepresentation/{l}linkResource")
+        rs_leg = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionTranscription")
+        rs_text = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionDescription/{l}descriptiveNoteValue")
+        img_rs_pfad = extr_text(record, f".//{l}resourceSet[2]/{l}resourceRepresentation/{l}linkResource")
+        dat_begin = extr_text(record, f".//{l}eventDate/{l}date/{l}earliestDate")
+        dat_ende = extr_text(record, f".//{l}eventDate/{l}date/{l}latestDate")
+        dat_verbal = extr_text(record, f".//{l}eventDate/{l}displayDate")
+        bemerkung = extr_text(record, f".//{l}objectDescriptionSet/{l}descriptiveNoteValue")
+
+        # more complicated
+        material = (extr_text(record, f".//{l}termMaterialsTech/{l}term") or '').split('>')[-1].strip()
+
+        diameter = weight = None  # Initialize the variables
+        for measurement in record.findall(f".//{l}objectMeasurementsSet/{l}objectMeasurements/{l}measurementsSet"):
+            measurement_type = extr_text(measurement, f"{l}measurementType")
+            measurement_value = extr_text(measurement, f"{l}measurementValue")
+            if measurement_type == "diameter":
+                diameter = measurement_value
+            elif measurement_type == "weight":
+                weight = measurement_value
+
+        literatur = '\n'.join(
+            element.text for element in record.findall(f".//{l}relatedWork/{l}object/{l}objectNote") if
+            element.text != "Literatur")
+
+        # Extract medailleur_list using a list comprehension
+        medailleur_list = [
+            extr_text(person, f"{l}actorInRole/{l}actor/{l}actorID")
+            for person in record.findall(f".//{l}eventActor")
+            if any(role_keyword in extr_text(person, f"{l}displayActorInRole") for role_keyword in
+                   ["Modelleur", "Medailleur", "Hersteller", "Bildhauer", "Künstler", "Entwerfer",
+                    "Beteiligte"])
+        ]
+        # Extract dargestellter_list using a list comprehension
+        dargestellter_list = [
+            extr_text(dargestellt, f"{l}actor/{l}actorID")
+            for dargestellt in record.findall(f".//{l}subjectActor")
+            if "Dargestellte Person" in extr_text(dargestellt, f"{l}displayActor")
+        ]
+
+        # convert variables to right format
+        record_dic = make_dic(titel, link, besitzer, material, diameter, weight, vs_leg, vs_text,
+                      img_vs_pfad, rs_leg, rs_text, img_rs_pfad, rand_text, literatur, dat_begin, dat_ende,
+                      dat_verbal, medailleur_list, dargestellter_list, bemerkung, lieferant)
+        record_list.append(record_dic)
+
+
+async def process_oai():
+    object_list = get_oai_urls("metadataPrefix=oai_dc&set=institution:DE-MUS-805518")
+    institution_list = get_oai_urls("metadataPrefix=oai_dc&set=objekttyp:Medaille")
+    url_list = []
+    for identifier in object_list:
+        if identifier in institution_list:
+            url_list.append(identifier)
+    print(F"number of medals to scrape {len(url_list)}")
+
+    # Set the desired rate of requests per second
+    requests_per_second = 20
     record_list = []
+    async def process_url(url):
+        await fetch_url(f"https://www.kenom.de/oai/?verb=GetRecord&metadataPrefix=lido&identifier={url}", record_list)
+    tasks = [process_url(url) for url in url_list]
+    await asyncio.gather(*tasks)
 
-    while True:
-        # get Text from Link
-        request_url = "https://www.kenom.de/oai/?verb=ListRecords&metadataPrefix=lido&set=objekttyp:Medaille" + (f'&resumptionToken={resumption_token}' if resumption_token else '')
-        response_text = make_request(request_url)
-        root = ET.fromstring(response_text)
-
-        # Define namespaces
-        l = '{http://www.lido-schema.org}'
-
-        for record in root.findall(".//{http://www.openarchives.org/OAI/2.0/}record"):
-            # simple extraction
-            lieferant = "Kenom"
-            rand_text = None
-            titel = extr_text(record, f".//{l}titleSet/{l}appellationValue")
-            link = extr_text(record, f".//{l}objectPublishedID")
-            besitzer = extr_text(record, f".//{l}repositoryName/{l}legalBodyName/{l}appellationValue")
-            vs_leg = extr_text(record, f".//{l}inscriptionsWrap{l}inscriptions/{l}inscriptionTranscription")
-            vs_text = extr_text(record, f".//{l}inscriptions/{l}inscriptionDescription/{l}descriptiveNoteValue")
-            img_vs_pfad = extr_text(record, f".//{l}resourceSet/{l}resourceRepresentation/{l}linkResource")
-            rs_leg = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionTranscription")
-            rs_text = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionDescription/{l}descriptiveNoteValue")
-            img_rs_pfad = extr_text(record, f".//{l}resourceSet[2]/{l}resourceRepresentation/{l}linkResource")
-            dat_begin = extr_text(record, f".//{l}eventDate/{l}date/{l}earliestDate")
-            dat_ende = extr_text(record, f".//{l}eventDate/{l}date/{l}latestDate")
-            dat_verbal = extr_text(record, f".//{l}eventDate/{l}displayDate")
-            bemerkung = extr_text(record, f".//{l}objectDescriptionSet/{l}descriptiveNoteValue")
-
-            # more complicated
-            material = (extr_text(record, f".//{l}termMaterialsTech/{l}term") or '').split('>')[-1].strip()
-
-            diameter = weight = None  # Initialize the variables
-            for measurement in record.findall(f".//{l}objectMeasurementsSet/{l}objectMeasurements/{l}measurementsSet"):
-                measurement_type = extr_text(measurement, f"{l}measurementType")
-                measurement_value = extr_text(measurement, f"{l}measurementValue")
-                if measurement_type == "diameter":
-                    diameter = measurement_value
-                elif measurement_type == "weight":
-                    weight = measurement_value
-
-            literatur = '\n'.join(
-                element.text for element in record.findall(f".//{l}relatedWork/{l}object/{l}objectNote") if
-                element.text != "Literatur")
-
-            # Extract medailleur_list using a list comprehension
-            medailleur_list = [
-                extr_text(person, f"{l}actorInRole/{l}actor/{l}actorID")
-                for person in record.findall(f".//{l}eventActor")
-                if any(role_keyword in extr_text(person, f"{l}displayActorInRole") for role_keyword in
-                       ["Modelleur", "Medailleur", "Hersteller", "Bildhauer", "Künstler", "Entwerfer",
-                        "Beteiligte"])
-            ]
-            # Extract dargestellter_list using a list comprehension
-            dargestellter_list = [
-                extr_text(dargestellt, f"{l}actor/{l}actorID")
-                for dargestellt in record.findall(f".//{l}subjectActor")
-                if "Dargestellte Person" in extr_text(dargestellt, f"{l}displayActor")
-            ]
-
-            # convert variables to right format
-            record_dic = make_dic(titel, link, besitzer, material, diameter, weight, vs_leg, vs_text,
-                          img_vs_pfad, rs_leg, rs_text, img_rs_pfad, rand_text, literatur, dat_begin, dat_ende,
-                          dat_verbal, medailleur_list, dargestellter_list, bemerkung, lieferant)
-            record_list.append(record_dic)
-
-        # Resumption Token
-        resumption_token = root.find(".//{http://www.openarchives.org/OAI/2.0/}resumptionToken")
-        print(resumption_token)
-        if not (resumption_token := resumption_token.text if resumption_token is not None else None):
-            break
-
-    save_json("output_kenom", record_list)
+    save_json("output/output_kenom", record_list)
 
 
 def get_museum_digital():
@@ -92,9 +100,11 @@ def get_museum_digital():
     # die Liste aller Medaillen laden, die mit der Serie von Huster verknüpft sind:
     response = requests.get("https://nat.museum-digital.de/json/series/1577")
     series_objects = json.loads(response.text).get('series_objects', [])
+    print("MD medal list loaded")
 
     # Jeden Link laden
     for object_id in series_objects:
+        print(object_id, len(series_objects))
         object_url = f"https://nat.museum-digital.de/json/object/{object_id}"
         response = requests.get(object_url)
         object_data = json.loads(response.text)
@@ -114,9 +124,14 @@ def get_museum_digital():
         img_rs_pfad = object_images[1].get('name') if len(object_images) > 1 else None
 
         inscr = extract_literal_value(object_data, "inscription")
-        vs_text = inscr.split("Vorderseite: ")[-1].split("\nRückseite: ")[0] if inscr else None
-        rs_text = inscr.split("\nRückseite: ")[-1].split("\nRand")[0] if inscr else None
-        rand_text = inscr.split("\nRand") if inscr else None
+
+        def extract_section_text(inscr, section):
+            matches = re.findall(rf'({section}\s*:\s*(.*?)\s*(?=\n|$))', inscr, re.DOTALL) if inscr else None
+            return '\n'.join(match[0] for match in matches) if inscr else None
+
+        vs_text = extract_section_text(inscr, "Vorderseite")
+        rs_text = extract_section_text(inscr, "Rückseite")
+        rand_text = extract_section_text(inscr, "Rand")
 
         dim = extract_literal_value(object_data, "object_dimensions")
         diameter = dim.split("Durchmesser: ")[-1].split("mm")[0] if dim else None
@@ -144,58 +159,75 @@ def get_museum_digital():
                               dat_verbal, medailleur_list, dargestellter_list, bemerkung, lieferant)
         record_list.append(record_dic)
 
-    save_json("output_md", record_list)
+    save_json("output/output_md", record_list)
 
 
-def selection():
+def selection(number, institution):
+    """
+    replaces the urls of the institutions with the corresponding NDP
+    :param number: either 49 for medailleur or 52 for dargestellter
+    :param institution: either kenom or md
+    :return: creates a json with the new values
+    """
+
     # Read the JSON data from "output_kenom.json"
-    with open('output_kenom.json', 'r') as file:
-        kenom_data = json.load(file)
-
-    # Define the filter criteria
-    target_besitzer = "Kulturstiftung Sachsen-Anhalt, Kunstmuseum Moritzburg Halle (Saale)"
-    target_dat_ende = datetime(1871, 1, 1)
+    with open(f"output/output_{institution}.json", 'r') as file:
+        data = json.load(file)
 
     # Read the "ndp_gbv.json" data
-    with open('NDP_GBV.json', 'r') as file:
-        ndp_gbv_data = json.load(file)
+    with open(f"mapping/{institution}-{number}.json", 'r') as file:
+        mapping = json.load(file)
 
-    # Define a function to convert dat_ende to a datetime object or None
-    def parse_dat_ende(dat_ende):
-        if isinstance(dat_ende, int):
-            return datetime(dat_ende, 1, 1)
-        try:
-            return datetime.strptime(dat_ende, '%Y-%m-%d')
-        except (ValueError, TypeError):
-            return None
+    new_data = []
+    log_data = []
 
-    # Filter and update the data in one go
-    filtered_data = []
+    print(f"{institution} out of {len(data)} values ", end="")  # number of values before mapping
+    for i, record in enumerate(data):
+        value = record.get('linked_persons_corporations', {}).get('49', '')
+        replacement = [
+            entry['NDP']
+            for entry in mapping
+            if entry.get('other') == (value if isinstance(value, str) else None)
+               or entry.get('other') in (value if isinstance(value, list) else [])
+        ]
+        if replacement:
+            record['linked_persons_corporations']['49'] = replacement
+            new_data.append(record)
+        else:
+            log_data.append([record['link'], record['linked_persons_corporations']['49']])
 
-    for record in kenom_data:
-        dat_ende = parse_dat_ende(record.get("dat_ende"))
-        if (
-            record.get("besitzer") == target_besitzer and
-            (dat_ende is not None and dat_ende >= target_dat_ende)
-        ):
-            updated_record = {
-                **record,
-                'linked_persons_corporations': {
-                    key: {
-                        "ndp_uri": [
-                            entry['GBV']
-                            for entry in ndp_gbv_data
-                            if entry['NDP'] in (value.get("ndp_uri", []) if isinstance(value, dict) else [])
-                        ]
-                    } if isinstance(value, dict) and "ndp_uri" in value else value
-                    for key, value in record.get("linked_persons_corporations", {}).items()
-                }
-            }
-            filtered_data.append(updated_record)
+        # hier eigentlich zwei unterschiedliche Logs erstellen, wenn die Medailleure noch nicht drin sind
+        # und wenn die Medailleure zu alt für medaillenkunst sind
+    print(f"selected {len(new_data)}")  # number after
 
     # Save the updated data to a new JSON file
-    with open('updated_kenom.json', 'w') as output_file:
-        json.dump(filtered_data, output_file, indent=2)
+    with open(f'output/{institution}_mapped.json', 'w') as output_f:
+        json.dump(new_data, output_f, indent=2)
 
+    with open(f"logs/{institution}_mapping_log.json", 'w') as log_f:
+        json.dump(log_data, log_f, indent=2)
+
+
+def send_to_API(institution):
+    with open(f"output/{institution}_mapped.json", 'r') as institution_f:
+        data = json.load(institution_f)
+
+    # API endpoint
+    api_url = "https://medaillenkunst.de/api-medal.v1.php"
+
+    # Open the log file in append mode
+    with open(f"logs/{institution}api_log.txt", "a") as log_file:
+        for record in data:
+            # Prepare the payload for the POST request
+            payload = {"medal": json.dumps(record)}
+            # Send POST request to the API
+            response = requests.post(api_url, data=payload)
+
+            # Write to the log file with newline characters
+            log_file.write(f"{record['link']}, response: {response.status_code}: {response.text}\n")
+
+            # Optionally, you can also print the information to the console
+            print(f"Status Code: {record['link']} {response.status_code}")
+            print("Response Message:", response.text)
 
 main()
