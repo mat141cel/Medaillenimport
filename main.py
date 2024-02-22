@@ -32,9 +32,9 @@ async def fetch_url(url, record_list):
         rs_leg = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionTranscription")
         rs_text = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionDescription/{l}descriptiveNoteValue")
         img_rs_pfad = extr_text(record, f".//{l}resourceSet[2]/{l}resourceRepresentation/{l}linkResource")
-        dat_begin = extr_text(record, f".//{l}eventDate/{l}date/{l}earliestDate")
-        dat_ende = extr_text(record, f".//{l}eventDate/{l}date/{l}latestDate")
-        dat_verbal = extr_text(record, f".//{l}eventDate/{l}displayDate")
+        dat_begin = extr_text(record, f".//{l}event[{l}eventType/{l}term='Herstellung']/{l}eventDate/{l}date/{l}earliestDate")
+        dat_ende = extr_text(record, f".//{l}event[{l}eventType/{l}term='Herstellung']/{l}eventDate/{l}date/{l}latestDate")
+        dat_verbal = extr_text(record, f".//{l}event[{l}eventType/{l}term='Herstellung']/{l}eventDate/{l}date/{l}displayDate")
         bemerkung = extr_text(record, f".//{l}objectDescriptionSet/{l}descriptiveNoteValue")
 
         # more complicated
