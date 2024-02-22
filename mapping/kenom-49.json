@@ -1,5 +1,9 @@
 [
   {
+    "NDP": "https://ikmk.smb.museum/ndp/person/14989",
+    "other": "http://uri.gbv.de/terminology/kenom_actor/7c81fb27-1ec6-4200-a40e-1c26d3bca5a7"
+  },
+  {
     "NDP": "https://ikmk.smb.museum/ndp/person/3425",
     "other": "http://uri.gbv.de/terminology/kenom_actor/0340e3cb-2345-465f-a99e-5f1d8d981bb3"
   },
