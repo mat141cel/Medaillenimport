@@ -6,9 +6,9 @@ import re
 # Configuration
 def main():
     #asyncio.run(process_oai())
-    #get_museum_digital()
+    get_museum_digital()
     #selection(49, "kenom")
-    #selection(49, "md")
+    selection(49, "md")
     #send_to_API("kenom")
     send_to_API("md")
 
@@ -101,6 +101,10 @@ def get_museum_digital():
     response = requests.get("https://nat.museum-digital.de/json/series/1577")
     series_objects = json.loads(response.text).get('series_objects', [])
     print("MD medal list loaded")
+    series_objects = (
+        35965,
+        35966
+    )
 
     # Jeden Link laden
     for object_id in series_objects:
