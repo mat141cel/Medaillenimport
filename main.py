@@ -44,7 +44,7 @@ async def fetch_url(url, record_list):
         for measurement in record.findall(f".//{l}objectMeasurementsSet/{l}objectMeasurements/{l}measurementsSet"):
             measurement_type = extr_text(measurement, f"{l}measurementType")
             measurement_value = extr_text(measurement, f"{l}measurementValue")
-            if measurement_type == "diameter":
+            if measurement_type in ("diameter", "height"):
                 diameter = measurement_value
             elif measurement_type == "weight":
                 weight = measurement_value
