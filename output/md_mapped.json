@@ -1,1 +1,64 @@
-[]
+[
+  {
+    "titel": "Medaille von Karl Schwenzer auf das landwirtschaftliche Jubil\u00e4umsfest 1889",
+    "link": "https://lmw.museum-digital.de/object/35965",
+    "besitzer": "Landesmuseum W\u00fcrttemberg",
+    "material": "Silber, gepr\u00e4gt",
+    "durchmesser": "41 ",
+    "gewicht": "31,8 ",
+    "avers": {
+      "leg": null,
+      "description": "Vorderseite: Kopf Karls nach rechts, Signatur am Halsabschnitt\nVorderseite: Umschrift: KARL KOENIG VON WUERTTEMBERG",
+      "img_pfad": "https://bildarchiv.landesmuseum-stuttgart.de/P/Bildarchiv/260823/260823.jpg"
+    },
+    "revers": {
+      "leg": null,
+      "description": "R\u00fcckseite: Umschrift: LANDWIRTSCHAFTLICHE DENKM\u00dcNZE VON JUBIL\u00c4UMSFEST 1889",
+      "img_pfad": "https://bildarchiv.landesmuseum-stuttgart.de/P/Bildarchiv/260824/260824.jpg"
+    },
+    "rand_text": "",
+    "literatur": null,
+    "dat_begin": "1889",
+    "dat_ende": "1889",
+    "dat_verbal": "1889",
+    "linked_persons_corporations": {
+      "49": [
+        "https://ikmk.smb.museum/ndp/person/3452"
+      ],
+      "54": "https://lmw.museum-digital.de/people/5529"
+    },
+    "bemerkung": "Im Jahr 1889 konnte W\u00fcrttemberg auf ein Vierteljahrhundert unter der Herrschaft von K\u00f6nig Karl zur\u00fcckblicken. Aus diesem Anlass wurde f\u00fcr das landwirtschaftliche Hauptfest, das im September 1889 in Cannstatt stattfand, eine \u201eJubil\u00e4umsdenkm\u00fcnze\u201c als Preismedaille in Auftrag gegeben. Sie wurde von Karl Schwenzer gefertigt, der seit 1878 als k\u00f6niglicher Hofmedailleur t\u00e4tig war. Die Medaille zeigt auf der Vorderseite das Bildnis des K\u00f6nigs und auf der R\u00fcckseite eine weibliche Gestalt inmitten von landwirtschaftlichen Ger\u00e4ten. Sie tr\u00e4gt eine Fahne, auf der der Wahlspruch \u201eHIE GUT WIRTEMBERG ALLWEG\u201c zu lesen ist. Hinter ihr ist eine Festtrib\u00fcne zu sehen, vor der gerade verschiedene Tiere zur Schau gestellt werden. \nDie Erfassung dieser Medaille wurde durch die Gitta-Kastner-Stiftung gef\u00f6rdert.\n[Saskia Watzl]",
+    "lieferant": "Museum-digital"
+  },
+  {
+    "titel": "Medaille von Karl Schwenzer auf das landwirtschaftliche Jubil\u00e4umsfest 1889",
+    "link": "https://lmw.museum-digital.de/object/35966",
+    "besitzer": "Landesmuseum W\u00fcrttemberg",
+    "material": "Silber, gepr\u00e4gt",
+    "durchmesser": "41 ",
+    "gewicht": "32,73 ",
+    "avers": {
+      "leg": null,
+      "description": "Vorderseite: Kopf Karls nach rechts, Signatur am Halsabschnitt\nVorderseite: Umschrift: KARL KOENIG VON WUERTTEMBERG",
+      "img_pfad": "https://bildarchiv.landesmuseum-stuttgart.de/P/Bildarchiv/260825/260825.jpg"
+    },
+    "revers": {
+      "leg": null,
+      "description": "R\u00fcckseite: Umschrift: LANDWIRTSCHAFTLICHE DENKM\u00dcNZE VON JUBIL\u00c4UMSFEST 1889",
+      "img_pfad": "https://bildarchiv.landesmuseum-stuttgart.de/P/Bildarchiv/260826/260826.jpg"
+    },
+    "rand_text": "",
+    "literatur": null,
+    "dat_begin": "1889",
+    "dat_ende": "1889",
+    "dat_verbal": "1889",
+    "linked_persons_corporations": {
+      "49": [
+        "https://ikmk.smb.museum/ndp/person/3452"
+      ],
+      "54": "https://lmw.museum-digital.de/people/5529"
+    },
+    "bemerkung": "Im Jahr 1889 konnte W\u00fcrttemberg auf ein Vierteljahrhundert unter der Herrschaft von K\u00f6nig Karl zur\u00fcckblicken. Aus diesem Anlass wurde f\u00fcr das landwirtschaftliche Hauptfest, das im September 1889 in Cannstatt stattfand, eine \u201eJubil\u00e4umsdenkm\u00fcnze\u201c als Preismedaille in Auftrag gegeben. Sie wurde von Karl Schwenzer gefertigt, der seit 1878 als k\u00f6niglicher Hofmedailleur t\u00e4tig war. Die Medaille zeigt auf der Vorderseite das Bildnis des K\u00f6nigs und auf der R\u00fcckseite eine weibliche Gestalt inmitten von landwirtschaftlichen Ger\u00e4ten. Sie tr\u00e4gt eine Fahne, auf der der Wahlspruch \u201eHIE GUT WIRTEMBERG ALLWEG\u201c zu lesen ist. Hinter ihr ist eine Festtrib\u00fcne zu sehen, vor der gerade verschiedene Tiere zur Schau gestellt werden. \nDie Erfassung dieser Medaille wurde durch die Gitta-Kastner-Stiftung gef\u00f6rdert.\n[Saskia Watzl]",
+    "lieferant": "Museum-digital"
+  }
+]
