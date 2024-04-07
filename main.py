@@ -1,16 +1,24 @@
 from reusable_code import *
 import asyncio
 import re
-
+import argparse
 
 # Configuration
 def main():
-    #asyncio.run(process_oai())
-    get_museum_digital()
-    #selection(49, "kenom")
-    selection(49, "md")
-    #send_to_API("kenom")
-    send_to_API("md")
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('format', choices=['kenom', 'md'], help='The format to use')
+    args = parser.parse_args()
+
+    if args.format == 'kenom':
+        asyncio.run(process_oai())
+        selection(49, "kenom")
+        send_to_API("kenom")
+        pass
+    elif args.format == 'md':
+        get_museum_digital()
+        selection(49, "md") 
+        send_to_API("md")
+        pass
 
 
 async def fetch_url(url, record_list):
@@ -32,13 +40,13 @@ async def fetch_url(url, record_list):
         rs_leg = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionTranscription")
         rs_text = extr_text(record, f".//{l}inscriptions[2]/{l}inscriptionDescription/{l}descriptiveNoteValue")
         img_rs_pfad = extr_text(record, f".//{l}resourceSet[2]/{l}resourceRepresentation/{l}linkResource")
-        dat_begin = extr_text(record, f".//{l}event[{l}eventType/{l}term='Herstellung']/{l}eventDate/{l}date/{l}earliestDate")
-        dat_ende = extr_text(record, f".//{l}event[{l}eventType/{l}term='Herstellung']/{l}eventDate/{l}date/{l}latestDate")
-        dat_verbal = extr_text(record, f".//{l}event[{l}eventType/{l}term='Herstellung']/{l}eventDate/{l}date/{l}displayDate")
         bemerkung = extr_text(record, f".//{l}objectDescriptionSet/{l}descriptiveNoteValue")
 
         # more complicated
-        material = (extr_text(record, f".//{l}termMaterialsTech/{l}term") or '').split('>')[-1].strip()
+        material = None
+        for materials in record.findall(f".//{l}termMaterialsTech"):
+            material += (extr_text(record, f"/{l}term") or '').split('>')[-1].strip()
+        print(material)
 
         diameter = weight = None  # Initialize the variables
         for measurement in record.findall(f".//{l}objectMeasurementsSet/{l}objectMeasurements/{l}measurementsSet"):
@@ -48,6 +56,14 @@ async def fetch_url(url, record_list):
                 diameter = measurement_value
             elif measurement_type == "weight":
                 weight = measurement_value
+
+        dat_begin = dat_ende = dat_verbal = None # initialize the variables
+        for event in record.findall(f".//{l}event"):
+            event_type = extr_text(event, f"{l}eventType/{l}term[2]")
+            if event_type == "Herstellung":
+                dat_begin = extr_text(event, f"{l}eventDate/{l}date/{l}earliestDate")
+                dat_ende = extr_text(event, f"{l}eventDate/{l}date/{l}latestDate")
+                dat_verbal = extr_text(event, f"{l}eventDate/{l}displayDate")
 
         literatur = '\n'.join(
             element.text for element in record.findall(f".//{l}relatedWork/{l}object/{l}objectNote") if
@@ -72,6 +88,7 @@ async def fetch_url(url, record_list):
         record_dic = make_dic(titel, link, besitzer, material, diameter, weight, vs_leg, vs_text,
                       img_vs_pfad, rs_leg, rs_text, img_rs_pfad, rand_text, literatur, dat_begin, dat_ende,
                       dat_verbal, medailleur_list, dargestellter_list, bemerkung, lieferant)
+        print(record_dic)
         record_list.append(record_dic)
 
 

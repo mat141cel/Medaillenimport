@@ -77,6 +77,7 @@ def get_oai_urls(metadata_prefix):
         # Update the URL for the next request
         url = f"https://www.kenom.de/oai/?verb=ListIdentifiers&resumptionToken={resumption_token}"
         print(url)
+        #break # Break the loop for testing purposes
 
     return url_list
 
