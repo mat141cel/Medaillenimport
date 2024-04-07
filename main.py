@@ -43,10 +43,11 @@ async def fetch_url(url, record_list):
         bemerkung = extr_text(record, f".//{l}objectDescriptionSet/{l}descriptiveNoteValue")
 
         # more complicated
-        material = None
+        material = []
         for materials in record.findall(f".//{l}termMaterialsTech"):
-            material += (extr_text(record, f"/{l}term") or '').split('>')[-1].strip()
-        print(material)
+            term = extr_text(materials, f"{l}term")
+            if '>' in term:
+                material.append(term.split('>')[-1].strip())
 
         diameter = weight = None  # Initialize the variables
         for measurement in record.findall(f".//{l}objectMeasurementsSet/{l}objectMeasurements/{l}measurementsSet"):
@@ -88,7 +89,6 @@ async def fetch_url(url, record_list):
         record_dic = make_dic(titel, link, besitzer, material, diameter, weight, vs_leg, vs_text,
                       img_vs_pfad, rs_leg, rs_text, img_rs_pfad, rand_text, literatur, dat_begin, dat_ende,
                       dat_verbal, medailleur_list, dargestellter_list, bemerkung, lieferant)
-        print(record_dic)
         record_list.append(record_dic)
 
 
@@ -99,8 +99,10 @@ async def process_oai():
     for identifier in object_list:
         if identifier in institution_list:
             url_list.append(identifier)
+    # for debugging purposes
+    #url_list = ["record_DE-68_kenom_123644"]
+    
     print(F"number of medals to scrape {len(url_list)}")
-
     # Set the desired rate of requests per second
     requests_per_second = 20
     record_list = []
