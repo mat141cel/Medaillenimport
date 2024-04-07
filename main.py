@@ -117,7 +117,7 @@ async def process_oai():
 def get_museum_digital():
     record_list = []
     # die Liste aller Medaillen laden, die mit der Serie von Huster verknüpft sind:
-    response = requests.get("https://nat.museum-digital.de/json/series/1577")
+    response = requests.get("https://lmw.museum-digital.de/json/series/1577")
     series_objects = json.loads(response.text).get('series_objects', [])
     print("MD medal list loaded")
     series_objects = (
@@ -128,7 +128,7 @@ def get_museum_digital():
     # Jeden Link laden
     for object_id in series_objects:
         print(object_id, len(series_objects))
-        object_url = f"https://nat.museum-digital.de/json/object/{object_id}"
+        object_url = f"https://lmw.museum-digital.de/json/object/{object_id}"
         response = requests.get(object_url)
         object_data = json.loads(response.text)
 
@@ -136,7 +136,7 @@ def get_museum_digital():
         vs_leg = rs_leg = None
         lieferant = "Museum-digital"
         titel = extract_literal_value(object_data, 'object_name')
-        link = f"https://nat.museum-digital.de/object/{object_id}"
+        link = f"https://lmw.museum-digital.de/object/{object_id}"
         besitzer = extract_literal_value(object_data.get('object_institution', {}), 'institution_name')
         material = extract_literal_value(object_data, 'object_material_technique')
         bemerkung = extract_literal_value(object_data, 'object_description')
@@ -169,17 +169,18 @@ def get_museum_digital():
         dat_ende = herstellung_event.get("time", {}).get("time_end")
         dat_verbal = herstellung_event.get("time", {}).get("time_name")
 
-        medailleur_list = f"https://nat.museum-digital.de/people/{extract_literal_value(herstellung_event.get('people', [{}]), 'people_id')}" if herstellung_event else None
+        medailleur_list = f"https://lmw.museum-digital.de/people/{extract_literal_value(herstellung_event.get('people', [{}]), 'people_id')}" if herstellung_event else None
 
         dargestellter_event = get_object_event_with_tag(object_data, 5)
         dargestellter_list = []
         if extract_literal_value(dargestellter_event, 'people_id') is not None:
-            dargestellter_list = f"https://nat.museum-digital.de/people/{extract_literal_value(dargestellter_event, 'people_id')}"
+            dargestellter_list = f"https://lmw.museum-digital.de/people/{extract_literal_value(dargestellter_event, 'people_id')}"
 
         # convert variables to right format
         record_dic = make_dic(titel, link, besitzer, material, diameter, weight, vs_leg, vs_text,
                               img_vs_pfad, rs_leg, rs_text, img_rs_pfad, rand_text, literatur, dat_begin, dat_ende,
                               dat_verbal, medailleur_list, dargestellter_list, bemerkung, lieferant)
+        print(record_dic)
         record_list.append(record_dic)
 
     save_json("output/output_md", record_list)
