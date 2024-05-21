@@ -5,7 +5,9 @@ import argparse
 from tqdm import tqdm
 
 def fetch_url(url):
-    response_text = requests.get(url).text
+    r = requests.get(url)
+    r.encoding = 'utf-8'
+    response_text = r.text
     root = ET.fromstring(response_text)
     # Define namespaces
     l = '{http://www.lido-schema.org}'
@@ -19,13 +21,14 @@ def fetch_url(url):
         
         # funktioniert, wer weiß wieso 
         test = record.findall(f".//{l}object/{l}objectWebResource")
-        nk_fundkomplex = ' | '.join([elem.text for elem in test if re.search(r'fundkomplex', elem.text)])
+        nk_fundkomplex = ' | '.join([elem.text for elem in test if re.search(r'fundkomplex', elem.text)]).replace("https://kenom.gbv.de/fundkomplex/", "http://hdl.handle.net/428894.vzg/")
         ocre_crro_verknüpfung = ' | '.join([elem.text for elem in test if re.search(r'numismatics', elem.text)])
       	
         # literatur ähnlich blöd wie fundkomplex
-        lit = record.findall(f".//{l}object/{l}objectNote")
-        # Assuming 'lit' is a list of elements
-        literaturfeld = ' | '.join(elem.text for i, elem in enumerate(lit[1:], 1) if lit[i-1].text == "Literatur")
+        text_content = [elem.text for elem in record.findall(f".//{l}object/{l}objectNote")]
+        literaturfeld = []
+        for i, text in enumerate(text_content): 
+            if text == "Literatur": literaturfeld.append(text_content[i-1])
 
         dat_begin = dat_ende = dat_verbal = None # initialize the variables
         for event in record.findall(f".//{l}event"):
@@ -42,6 +45,7 @@ def fetch_url(url):
                         "nk_fundkomplex": nk_fundkomplex,
                         "literaturfeld": literaturfeld,
                         "ocre_crro_verknüpfung": ocre_crro_verknüpfung}
+                print(records)
                 return records
         except: pass
         
