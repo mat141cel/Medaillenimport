@@ -29,6 +29,7 @@ def fetch_url(url):
         literaturfeld = []
         for i, text in enumerate(text_content): 
             if text == "Literatur": literaturfeld.append(text_content[i-1])
+        literaturfeld = " | ".join(literaturfeld)
 
         dat_begin = dat_ende = dat_verbal = None # initialize the variables
         for event in record.findall(f".//{l}event"):
@@ -53,7 +54,7 @@ def fetch_url(url):
 
 def main():
     # Opening JSON file
-    with open('mario.json.json') as f: url_list = json.load(f)
+    with open('mario.json.json') as f: url_list = json.load(f)[:100]
     batch_size = 1000
     total_batches = (len(url_list) + batch_size - 1) // batch_size
 
