@@ -46,7 +46,6 @@ def fetch_url(url):
                         "nk_fundkomplex": nk_fundkomplex,
                         "literaturfeld": literaturfeld,
                         "ocre_crro_verknüpfung": ocre_crro_verknüpfung}
-                print(records)
                 return records
         except: pass
         
@@ -54,7 +53,7 @@ def fetch_url(url):
 
 def main():
     # Opening JSON file
-    with open('mario.json.json') as f: url_list = json.load(f)[:100]
+    with open('mario.json.json') as f: url_list = json.load(f)
     batch_size = 1000
     total_batches = (len(url_list) + batch_size - 1) // batch_size
 
