@@ -71,10 +71,13 @@ def main():
     with open(f"mario_output.json", "w", encoding='utf-8') as f:
         json.dump(record_list, f, ensure_ascii=False)
 
-main()
+#main()
 
 async def process_oai():
     url_list = get_oai_urls("metadataPrefix=oai_dc&set=relation:fundkomplex:true")
     save_json("mario.json", url_list)
 
 
+
+with open("mario_output.json", "r") as f: json = json.load(f)
+print(len(json))
